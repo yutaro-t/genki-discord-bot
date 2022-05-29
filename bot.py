@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 import os
-from sre_parse import Verbose
 
 import discord
 from dotenv import load_dotenv
-import random
+from component import *
+import traceback
 
 load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
-client = discord.Client()
+PREFIX = "k:"
+
+intents = discord.Intents().default()
+intents.members = True
+
+client = discord.Client(intents=intents)
+lst = ComponentList(PREFIX, [Teams(client), Roll(client)])
 
 @client.event
 async def on_ready():
@@ -27,8 +34,12 @@ async def on_message(message):
     elif 'おはよう' in message.content:
         await message.channel.send('タメ口はいかがなものでしょうか?')
     
-    if(message.content)
-        
+    if message.content[0:len(PREFIX)] == PREFIX:
+        try:
+            await lst.on_message(message, message.content[len(PREFIX):])
+        except Exception as e:
+            await message.channel.send(f"[エラー] {e}")
+            print(traceback.format_exc())
 
 
 client.run(TOKEN)
