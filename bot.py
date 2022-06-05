@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
+from os.path import join, dirname
+
+from dotenv import load_dotenv
+load_dotenv(join(dirname(__file__), '.env'))
 
 import discord
-from dotenv import load_dotenv
 from component import *
 import traceback
 
-load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = "k:"
@@ -15,7 +17,7 @@ intents = discord.Intents().default()
 intents.members = True
 
 client = discord.Client(intents=intents)
-lst = ComponentList(PREFIX, [Teams(client), Roll(client)])
+lst = ComponentList(PREFIX, [Teams(client), Roll(client), Line(client)])
 
 @client.event
 async def on_ready():
@@ -42,4 +44,5 @@ async def on_message(message):
             print(traceback.format_exc())
 
 
-client.run(TOKEN)
+if __name__ == "__main__":
+    client.run(TOKEN)

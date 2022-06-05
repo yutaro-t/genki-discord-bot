@@ -9,7 +9,7 @@ class ComponentList:
 
     async def on_message(self, message: Message, content: str):
 
-        splitted = shlex.split(content)
+        splitted = shlex.split(content.replace("　", " "))
         command = splitted[0].lower()
 
         if command == "help" or command == "h":
