@@ -1,13 +1,6 @@
-﻿import re
-from typing import List
-from discord import Client, Message, VoiceChannel, Member
+﻿from discord import Client
 import random 
-import math
 from . import Component
-
-channel_mention_re = re.compile("<#(\d+)>")
-
-previous_players = {}
 
 class Roll(Component):
     def __init__(self, client: Client):

@@ -4,8 +4,6 @@ from discord import Client, Embed
 import random 
 from . import Component
 
-channel_mention_re = re.compile("<#(\d+)>")
-
 previous_players = {}
 
 sentences = [

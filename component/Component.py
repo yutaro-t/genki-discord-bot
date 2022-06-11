@@ -24,10 +24,14 @@ class Component(metaclass=abc.ABCMeta):
     @staticmethod
     def parse_config(ss: List[str], default: Dict[str, str] = {}) -> Dict[str, str]:
         res = default.copy()
+
+        current = ""
         for s in ss:
             splitted = s.split(':')
             if len(splitted) < 2:
-                raise Exception("設定が無効です")
-            res[splitted[0].lower()] = splitted[1]
+                res[current] = (res[current] + " " + splitted[0]).strip()
+            else:
+                current = splitted[0].lower()
+                res[current] = splitted[1].strip()
     
         return res

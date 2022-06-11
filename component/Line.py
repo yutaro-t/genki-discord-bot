@@ -5,8 +5,6 @@ from linebot import LineBotApi
 from linebot.models import TextSendMessage
 from . import Component
 
-channel_mention_re = re.compile("<#(\d+)>")
-
 
 line_bot_api = LineBotApi(os.getenv('LINE_ACCESS_TOKEN'))
 to = os.getenv('LINE_GROUP_ID')

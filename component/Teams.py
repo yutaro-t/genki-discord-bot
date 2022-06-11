@@ -1,6 +1,6 @@
 ﻿import re
 from typing import List
-from discord import Client, Message, VoiceChannel, Member
+from discord import Client, Message, VoiceChannel, Member, Embed
 import random 
 import math
 from . import Component
@@ -10,8 +10,9 @@ channel_mention_re = re.compile("<#(\d+)>")
 previous_players = {}
 
 class Teams(Component):
-    def __init__(self, client: Client):
-        super().__init__("teams", "チーム分け", client, alias=["t", "team"], command="[オプション]")
+    def __init__(self, client: Client, g_prefix: str="k:"):
+        self.g_prefix = g_prefix
+        super().__init__("teams", "チーム分け", client, alias=["t", "team"], command="")
 
     async def on_message(self, message, contents):
         if len(contents) == 0:
@@ -32,10 +33,19 @@ class Teams(Component):
         
     def get_help(self):
         return "\n".join([
-            "ランダムにチーム分けをします。現在ボイスチャンネルにいる場合、そのチャンネルのメンバーでチーム分けをします。",
-            "オプション:",
-            "```ext:[リスト(コンマ区切り)] - プレイヤーを追加します",
-            "channel:[チャンネル] - 参照するチャンネルを変更します```",
+            f"ランダムにチーム分けをします。現在ボイスチャンネルにいる場合、そのチャンネルのメンバーでチーム分けをします。(詳細は`{self.g_prefix}teams help`)",
+        ])
+    def get_detail_help(self):
+        com = f"{self.g_prefix}teams"
+        return "\n".join([
+            "**コマンド:**",
+            f"`{com}` - 現在ボイスチャンネルにいる場合、そのチャンネルのメンバーでチーム分けをします",
+            f"`{com} replay` - 前回のマッチと同じメンバーでプレイします",
+            f"`{com} help` - ヘルプを表示します",
+            "**オプション:**",
+            f"`{com} ext:[リスト(コンマ区切り)]` - プレイヤーを追加します",
+            f"`{com} channel:[チャンネル]` - 参照するチャンネルを変更します",
+            f"`{com} rm:[メンバーリスト(コンマ区切り)]` - プレイヤーを除きます",
         ])
 
     async def create_teams(self, message: Message, setting_strs: List[str]):
@@ -55,6 +65,8 @@ class Teams(Component):
         players = [m.mention for m in members]
         if setting.get("ext") is not None:
             players.extend(setting.get("ext").split(","))
+        if setting.get("rm") is not None:
+            players = [p for p in players if p not in setting.get("rm")]
         
         previous_players[message.guild.id] = players
         
@@ -70,7 +82,7 @@ class Teams(Component):
     
     
     async def send_help(self, message: Message):
-        await message.channel.send(self.get_help())
+        await message.channel.send(self.get_detail_help())
 
 
     async def create_teams_from_players(self, message: Message, players: List[str]):

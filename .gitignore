@@ -3,3 +3,6 @@ lib*
 bin
 share
 __pycache__
+pyvenv.cfg
+MAKOTOBOT.db
+test.py
