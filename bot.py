@@ -17,7 +17,7 @@ intents = discord.Intents().default()
 intents.members = True
 
 client = discord.Client(intents=intents)
-lst = ComponentList(PREFIX, [Teams(client, PREFIX),LolGame(client, PREFIX), Roll(client), Line(client), Fortune(client), Link(client)])
+lst = ComponentList(PREFIX, [Teams(client, PREFIX), Roll(client), Line(client), Fortune(client), Link(client),LolGame(client, PREFIX),])
 
 @client.event
 async def on_ready():

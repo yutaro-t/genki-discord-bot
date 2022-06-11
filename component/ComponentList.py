@@ -1,4 +1,4 @@
-﻿from discord import Message
+﻿from discord import Message, Embed
 from typing import List
 from . import Component
 import shlex
@@ -24,29 +24,18 @@ class ComponentList:
         raise Exception(f"コマンドが見つかりませんでした: {command}")
 
     async def send_help(self, message: Message):
-        res = [
-            f"おはようございます、{message.author.mention}!元気があっていいですね!",
-            ""
-        ]
+
+        embed = Embed(
+            title="長野誠校長のトリセツ"
+        )
         for component in self.components:
             help = component.get_help()
-            res.extend([
-                f"__**{component.label}**__",
-                f"```{self.prefix}{component.prefix} {component.command}```",
-                f"(エイリアス:{'、'.join(component.alias)})",
-                help,
-                "",
-            ])
-            print
-            if help[-3:] != "```":
-                res.append("")
+            name = f"{component.label} (エイリアス:{'、'.join(component.alias)})" if len(component.alias) > 0 else component.label
+            embed.add_field(name=name, value=f'''
+                ```{self.prefix}{component.prefix} {component.command}```
+                {help}
+            ''', inline=False)
 
-        res.extend([
-            f"__**ヘルプ**__",
-            f"```{self.prefix}help```",
-            f"(エイリアス:h)",
-            "コマンドのヘルプを表示します"
-        ])
+        embed.add_field(name="ヘルプ (エイリアス:h)", value=f"```{self.prefix}help```\nコマンドのヘルプを表示します")
 
-
-        await message.channel.send("\n".join(res))
+        await message.channel.send(f"おはようございます、{message.author.mention}!元気があっていいですね!", embed=embed)

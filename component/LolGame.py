@@ -20,7 +20,7 @@ previous_players = {}
 class LolGame(Component):
     def __init__(self, client: Client, g_prefix: str="k:"):
         self.g_prefix = g_prefix
-        super().__init__("lolgame", "LoLのゲームを作成します", client, alias=["lg"], command="[オプション]")
+        super().__init__("lolgame", "LoLゲーム作成", client, alias=["lg"], command="[オプション]")
 
     async def on_message(self, message, contents):
         if len(contents) == 0:
