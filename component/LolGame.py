@@ -40,6 +40,10 @@ class LolGame(Component):
             await self.set_send_score(message, contents[2], int(contents[1]))
         elif main_command == "showscore" and len(contents) > 1:
             await self.send_score(message, contents[1])
+        elif main_command == "register"  and len(contents) > 1:
+            await self.create_player(message, member_mention_re.match(contents[1])[1])
+        elif main_command == "register":
+            await self.create_player(message, message.author.id)
         else:
             await self.create_teams(message, contents)
         
@@ -84,7 +88,8 @@ class LolGame(Component):
             players.extend([match[1][1] for match in matches])
                 
         if setting.get("rm") is not None:
-            players = [p for p in players if p not in [member_mention_re.match(s)[1] for s in setting.get("rm").split(",")]]
+            players = [p for p in players if str(p) not in [member_mention_re.match(s)[1] for s in setting.get("rm").split(",")]]
+            print(players)
         
         return players
 
@@ -110,7 +115,7 @@ class LolGame(Component):
         await message.channel.send(self.get_detail_help())
 
     async def create_teams_from_players(self, message: Message, players: List[str], setting: Dict[str, str]):
-        (teamA, teamB, teamAsum, teamBsum) = self.create_balanced_teams([{'obj': p, 'score': self.get_score(p)} for p in players])
+        (teamA, teamB, teamAsum, teamBsum) = self.create_balanced_teams([{'obj': p, 'score': await self.get_score(message, p)} for p in players])
 
         resultA: List[str] = []
         resultA.append(f"🔵チーム:(スコア{teamAsum})")
@@ -122,7 +127,7 @@ class LolGame(Component):
         resultB.append(", ".join([to_mention(s) for s in teamB]))
         await message.channel.send("\n".join(resultB))
 
-        if setting.get("noCode").lower() == "true":
+        if setting.get("noCode") != None and  setting.get("noCode").lower() == "true":
             return
 
         # tournament_code = await tournament.create_code(setting.get("pick"))
@@ -158,16 +163,19 @@ class LolGame(Component):
 
         return (teamA, teamB, teamAsum, teamBsum)
 
-    def get_score(self, playerID: str) -> int:
+    async def get_score(self, message: Message, playerID: str) -> int:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         res = cur.execute("SELECT score FROM account WHERE discord_id=?", (playerID, )).fetchone()
         conn.close()
 
+        if res == None:
+            await message.channel.send(f"プレイヤー<@{playerID}>が見つかりません")
+            return
         return res[0]
     
     async def send_score(self, message: Message, playerID: str):
-        score = self.get_score(member_mention_re.match(playerID)[1])
+        score = await self.get_score(message, member_mention_re.match(playerID)[1])
         await message.channel.send(f"現在の {playerID} のレート: {score}")
 
     def set_score(self, playerID: str, score: int) -> int:
@@ -183,6 +191,19 @@ class LolGame(Component):
         if res == None:
             raise Exception(f"プレイヤーID{playerID}が見つかりませんでした")
         return res[0]
+
+    async def create_player(self, message: Message, playerID: str):
+        conn = sqlite3.connect(DB_NAME)
+        cur = conn.cursor()
+        id = cur.execute('SELECT discord_id FROM account WHERE discord_id = ?', (playerID, )).fetchone()
+        if id != None:
+            await message.channel.send("プレイヤーが存在します")
+        else:
+            cur.execute('INSERT INTO account(discord_id, score) VALUES (?, 0)', (playerID, ))
+            await message.channel.send("プレイヤーを作成しました")
+        conn.commit()
+        conn.close()
+
     
     async def set_send_score(self, message: Message, playerID: str, score: int):
         score = self.set_score(member_mention_re.match(playerID)[1], score)
