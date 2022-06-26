@@ -62,7 +62,7 @@ class Teams(Component):
             channel = message.author.voice.channel
 
         members: List[Member] = [] if channel is None else channel.members
-        players = [m.mention for m in members]
+        players = [m.mention.replace('!', '') for m in members]
         if setting.get("ext") is not None:
             players.extend(setting.get("ext").split(","))
         if setting.get("rm") is not None:
